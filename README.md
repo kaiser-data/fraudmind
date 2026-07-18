@@ -232,6 +232,30 @@ journal · material purchases without goods receipt · near-duplicate parties ·
 changes (GoBD) · entries after lock date / backdated · management-user manual journals ·
 rarely-used accounts + designated full-review account · insolvency receivables & bill-and-hold.
 
+## Project story (built in one day)
+
+Timeline, Berlin Summer Lock-In 2026-07-18:
+
+- **Morning** — parsed the practice dossier, built ingest + 16 check families, cut 1,170
+  raw anomalies down to 18 findings without losing a single planted fraud. Distilled the
+  anti-overfitting rules into a written policy file the coding agent must read before
+  touching detectors ([.claude/skills/audit-detectors](.claude/skills/audit-detectors/SKILL.md)).
+- **Afternoon** — validated against the practice answer key: **4/4 planted schemes, zero
+  false accusations.** Re-derived the key itself from raw files to confirm every amount.
+  Built the React review console, PDF report, and the OpenAI explanation layer with
+  per-token numeric validation.
+- **17:50, final dossier drops** — different company, 1.08M GL lines, renamed files, new
+  user scheme, one companion document missing. The pipeline generalized: 54 findings in
+  ~40 seconds, zero code changes to the check logic needed beyond format tolerance.
+- **Evening** — pushed the dossier into a Cognee knowledge graph, queried it blind, and
+  let the two methods judge each other (head-to-head above). The graph found four real
+  leads the engine missed; each became a general rule candidate.
+
+**Honest limitations:** cloud cognify latency made the graph impractical under deadline
+(measured post-mortem in [docs/HYBRID_ARCHITECTURE.md](docs/HYBRID_ARCHITECTURE.md));
+explanation-layer runs were blocked part of the day by API quota; the engine only finds
+what a rule family encodes — that's precisely why the graph layer exists.
+
 ## Partner tech
 
 - **Cognee** — knowledge graph over the dossier documents; powers the case chat and
