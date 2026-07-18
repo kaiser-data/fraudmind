@@ -168,7 +168,7 @@ def parse_multipart(headers, body: bytes):
 
 
 # ---------------------------------------------------------------- source viewer
-ACTIVE = {"dossier": PRACTICE_DOSSIER}
+ACTIVE = {"dossier": Path(os.environ.get("DOSSIER_PATH") or PRACTICE_DOSSIER)}
 SRC_REF = re.compile(
     r"^(?P<path>[^:#]+?)(?:#(?P<sheet>[^:]+))?(?::(?P<kind>row|page)(?P<n>\d+))?$")
 CONTEXT_ROWS = 3
@@ -229,6 +229,18 @@ def source_view(ref: str) -> dict:
                 for i in range(lo, min(len(data), n - 1 + CONTEXT_ROWS + 1))]
         return {"ref": ref, "kind": "table", "file": m.group("path"),
                 "sheet": ws.title, "header": header, "rows": rows}
+
+    if suffix == ".docx":
+        import zipfile
+        try:
+            with zipfile.ZipFile(target) as z:
+                xml = z.read("word/document.xml").decode("utf-8", errors="replace")
+        except Exception as e:
+            return {"error": f"docx extraction failed: {e}"}
+        xml = re.sub(r"</w:p>", "\n\n", xml)
+        text = re.sub(r"<[^>]+>", "", xml)
+        text = re.sub(r"\n{3,}", "\n\n", text).strip()
+        return {"ref": ref, "kind": "pdf", "page": 1, "text": text[:8000]}
 
     if suffix in (".csv", ".txt"):
         lines = target.read_text(encoding="latin-1",
@@ -417,18 +429,104 @@ def brain_update():
                  f"Amount {n['amount_eur']} EUR. {n['summary']} "
                  f"Sources: {'; '.join(n['provenance'][:4])}" for n in nodes]
         if texts:
+            # Cognee Cloud ingests via multipart /remember (runs cognify)
+            doc = ("# Auditor verdicts — confirmed fraud nodes\n\n"
+                   + "\n\n".join(texts)).encode()
+            boundary = "----fraudmindbrain"
+            body = (
+                f"--{boundary}\r\n"
+                'Content-Disposition: form-data; name="data"; '
+                'filename="verdict_nodes.md"\r\n'
+                "Content-Type: text/plain\r\n\r\n").encode() + doc + (
+                f"\r\n--{boundary}\r\n"
+                'Content-Disposition: form-data; name="datasetName"\r\n\r\n'
+                f"{DATASET}\r\n--{boundary}--\r\n").encode()
             req = urllib.request.Request(
-                f"{COGNEE_URL}/api/v1/add",
-                data=json.dumps({"data": texts,
-                                 "datasetName": DATASET}).encode(),
+                f"{COGNEE_URL}/api/v1/remember",
+                data=body,
                 headers={"X-Api-Key": COGNEE_KEY,
-                         "Content-Type": "application/json"},
+                         "Content-Type":
+                         f"multipart/form-data; boundary={boundary}"},
                 method="POST")
             with urllib.request.urlopen(req, timeout=60):
                 pushed = True
     except Exception:
         pushed = False
     return {"nodes": len(nodes), "cognee_pushed": pushed}
+
+
+# ---------------------------------------------------------------- chat
+OPENAI_URL = "https://api.openai.com/v1/chat/completions"
+
+
+def _openai_key():
+    if os.environ.get("OPENAI_API_KEY"):
+        return os.environ["OPENAI_API_KEY"]
+    env_file = ROOT / ".env"
+    if env_file.exists():
+        for line in env_file.read_text().splitlines():
+            if line.startswith("OPENAI_API_KEY="):
+                return line.split("=", 1)[1].strip()
+    return None
+
+
+def chat_answer(messages: list) -> dict:
+    """Answer a chat turn grounded in findings + Cognee recall.
+
+    OpenAI writes the language; all facts come from the engine findings and
+    the knowledge graph. Falls back to the raw graph answer if OpenAI fails.
+    """
+    question = next((m.get("content", "") for m in reversed(messages)
+                     if m.get("role") == "user"), "")
+    findings = read_json(BUILD / "findings.json", [])
+    verdicts = read_verdicts()
+    lines = []
+    for f in findings:
+        v = verdicts.get(f["id"], {}).get("verdict")
+        amt = (f" · {f['amount_eur']:,.2f} EUR" if f.get("amount_eur") else "")
+        lines.append(
+            f"{f['id']} [{f['tier']}/{f['severity']}]{amt} — {f['title']}"
+            + (f" — auditor verdict: {v}" if v else "")
+            + f" — sources: {'; '.join(f.get('provenance', [])[:3])}")
+    graph_text = ""
+    try:
+        results = cognee_recall(question)
+        if isinstance(results, list) and results:
+            graph_text = str(results[0].get("text", ""))[:3000]
+    except Exception:
+        pass
+    system = (
+        "You are the fraudmind case assistant for an audit dossier "
+        f"({DATASET}). Answer ONLY from the context below. Cite finding IDs "
+        "(F001...) and file:row sources. Never invent a number - every "
+        "figure you state must appear verbatim in the context. If the "
+        "context does not answer the question, say so.\n\n"
+        "## Engine findings (deterministic, with auditor verdicts)\n"
+        + "\n".join(lines)[:9000]
+        + ("\n\n## Knowledge-graph recall for this question\n" + graph_text
+           if graph_text else ""))
+    key = _openai_key()
+    if key:
+        try:
+            payload = {"model": "gpt-4.1-mini", "max_tokens": 700,
+                       "messages": [{"role": "system", "content": system}]
+                       + [m for m in messages if m.get("role") in
+                          ("user", "assistant")][-8:]}
+            req = urllib.request.Request(
+                OPENAI_URL, data=json.dumps(payload).encode(),
+                headers={"Authorization": f"Bearer {key}",
+                         "Content-Type": "application/json"}, method="POST")
+            with urllib.request.urlopen(req, timeout=60) as r:
+                out = json.loads(r.read())
+            return {"reply": out["choices"][0]["message"]["content"],
+                    "engine": "openai+graph"}
+        except Exception:
+            pass
+    if graph_text:
+        return {"reply": graph_text, "engine": "graph-only"}
+    return {"reply": "No answer available: OpenAI unreachable and the "
+                     "knowledge graph returned nothing for this question.",
+            "engine": "none"}
 
 
 # ---------------------------------------------------------------- cognee ask
@@ -525,6 +623,13 @@ class Handler(BaseHTTPRequestHandler):
                 started = start_pipeline(dossier)
                 self._send(200 if started else 409,
                            {"started": started})
+            elif route == "/api/chat":
+                body = json.loads(self._read_body() or b"{}")
+                msgs = body.get("messages") or []
+                if not isinstance(msgs, list) or not msgs:
+                    self._send(400, {"detail": "messages required"})
+                    return
+                self._send(200, chat_answer(msgs))
             elif route == "/api/verdicts":
                 body = json.loads(self._read_body() or b"{}")
                 fid = str(body.get("id", "")).strip()

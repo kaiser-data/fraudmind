@@ -7,6 +7,7 @@ import { UploadStage } from './stages/UploadStage'
 import { AnalyzeStage } from './stages/AnalyzeStage'
 import { ReviewStage } from './stages/ReviewStage'
 import { ReportStage } from './stages/ReportStage'
+import { ChatDock } from './ChatDock'
 
 type Stage = 'upload' | 'analyze' | 'review' | 'report'
 
@@ -112,6 +113,7 @@ export default function App() {
           />
         )}
       </main>
+      {findings.length > 0 && <ChatDock />}
     </div>
   )
 }

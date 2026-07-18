@@ -46,7 +46,21 @@ const DEMO_ONLY =
   'This public build is a read-only demo of the practice case. '
   + 'Run the local console (python3 app.py) to analyze new dossiers.'
 
+export interface ChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+export interface ChatReply {
+  reply: string
+  engine: string
+}
+
 export const api = {
+  chat: async (messages: ChatMessage[]): Promise<ChatReply> => {
+    if (staticMode) return { reply: DEMO_ONLY, engine: 'none' }
+    return postJSON<ChatReply>('/api/chat', { messages })
+  },
   findings: async (): Promise<Finding[]> => {
     try {
       const res = await fetch('/api/findings')

@@ -133,11 +133,15 @@ export function Chart(
         )}
         {placed.pts.filter((p) => !p.related).map((p) => (
           <circle key={p.id} cx={p.x} cy={p.y} r={2}
-            fill={CONTEXT} opacity={0.35} />
+            fill={CONTEXT} opacity={0.22} />
         ))}
+        {/* finding dots render LAST so they always sit on top of context */}
         {related.map((p) => (
-          <circle key={p.id} cx={p.x} cy={p.y} r={5}
-            fill={FLAGGED} stroke="#fff" strokeWidth={2} />
+          <g key={p.id}>
+            <circle cx={p.x} cy={p.y} r={9} fill={FLAGGED} opacity={0.18} />
+            <circle cx={p.x} cy={p.y} r={5.5}
+              fill={FLAGGED} stroke="#fff" strokeWidth={2} />
+          </g>
         ))}
         {hover && (
           <circle cx={hover.x} cy={hover.y} r={7} fill="none"

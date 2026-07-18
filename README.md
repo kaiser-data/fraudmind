@@ -2,6 +2,12 @@
 
 **Deterministic fraud-hunting over audit dossiers — no number without a source.**
 
+![Python 3.12](https://img.shields.io/badge/python-3.12-1f3d7a)
+![React + Vite](https://img.shields.io/badge/frontend-React%20%2B%20Vite-1f3d7a)
+![Cognee Cloud](https://img.shields.io/badge/knowledge%20graph-Cognee%20Cloud-6b3d7a)
+![OpenAI](https://img.shields.io/badge/language%20layer-OpenAI-2d7a4f)
+![findings cite file:row](https://img.shields.io/badge/every%20finding-cites%20file%3Arow-a32020)
+
 Built at the Berlin Summer Lock-In hackathon (cortea fraud-hunt track), 2026-07-18.
 fraudmind ingests a German GDPdU audit export (GL, subledgers, fixed assets + accompanying
 documents), links every transaction into cross-document chains, runs a catalog of deterministic
@@ -14,6 +20,8 @@ graph. Every finding cites its exact source: `file:row`, `file#sheet:row`, or `f
 python3 ingest.py "path/to/dossier" && python3 checks.py && python3 app.py
 # → build/findings.json + review console at http://127.0.0.1:8600
 ```
+
+![fraudmind review console — F001 (€6M journal posted without release) with case chat open](docs/review-console.png)
 
 ## Results on the FINAL dossier (Beispiel Dämmstoffe GmbH — 1,083,723 GL lines)
 
@@ -66,48 +74,59 @@ Full write-up: [REPORT.md](REPORT.md). Machine-readable: `build/findings.json` a
 ## Architecture
 
 ```mermaid
-flowchart LR
-    subgraph dossier["📁 Audit dossier (GDPdU)"]
-        A1["GL · subledgers · assets<br/>(txt + index.xml)"]
-        A2["Companion docs<br/>(csv · xlsx · docx · pdf)"]
+flowchart TB
+    subgraph dossier["📁 AUDIT DOSSIER — GDPdU export"]
+        direction LR
+        A1["🧾 GL · AR/AP subledgers · assets<br/><i>txt + index.xml, 1.08M lines</i>"]
+        A2["📎 Companion documents<br/><i>csv · xlsx · docx · pdf</i>"]
     end
 
-    subgraph engine["⚙️ Deterministic engine"]
-        B["ingest.py<br/>parse + fuzzy file resolution,<br/>link chains by document no."]
-        C["checks.py<br/>22 check families,<br/>thresholds parsed from the<br/>dossier's own planning workpaper"]
-        D[("build/findings.json<br/>two-tier: FLAGGED / NEEDS_REVIEW<br/>every number cites file:row")]
+    subgraph engine["⚙️ DETERMINISTIC ENGINE — owns every number"]
+        direction LR
+        B["<b>ingest.py</b><br/>fuzzy file resolution ·<br/>cross-document chains ·<br/>patterns derived from data"]
+        C["<b>checks.py</b> · 22 families<br/>thresholds parsed from the<br/>dossier's own planning workpaper"]
+        D[("<b>findings.json</b><br/>FLAGGED / NEEDS_REVIEW<br/>every figure cites file:row")]
+        B --> C --> D
     end
 
-    subgraph ai["🧠 Language & graph layer"]
-        E["explain.py · OpenAI<br/>DE/EN auditor language,<br/>every number validated<br/>against the engine"]
-        F["Cognee Cloud<br/>knowledge graph of users,<br/>journals, approvals, permissions<br/>→ independent candidate ranking"]
+    subgraph ai["🧠 CONSTRAINED AI — language & relationships only"]
+        direction LR
+        E["<b>explain.py</b> · OpenAI<br/>DE/EN auditor language ·<br/>every numeric token validated"]
+        F["<b>Cognee Cloud</b> knowledge graph<br/>users → journals → approvals →<br/>permissions · independent<br/>fraud-candidate ranking"]
     end
 
-    subgraph ui["🖥️ Review console (React)"]
-        G["app.py · stdlib server :8600"]
-        H["1 Dossier → 2 Analysis →<br/>3 Review (auditor verdicts) →<br/>4 Report (PDF)"]
+    subgraph ui["🖥️ REVIEW CONSOLE — the auditor decides"]
+        direction LR
+        G["<b>app.py</b> · stdlib server :8600<br/>keys never reach the browser"]
+        H["React console<br/>Dossier → Analysis → Review → Report"]
+        I["💬 case chat · 🔍 evidence viewers<br/>csv / xlsx / pdf / docx · 📄 PDF report"]
+        G --- H --- I
     end
 
-    A1 --> B
-    A2 --> B
-    B --> C
-    C --> D
-    D --> E
-    D --> F
-    D --> G
+    dossier ==> engine
+    D ==> E
+    D ==> F
+    D ==> G
     E --> G
-    F -- "Ask the brain (live Q&A)" --> G
-    G --> H
+    F <-->|"chat & Q&A · verdicts pushed<br/>back as fraud nodes"| G
 
-    style dossier fill:#f5f0e8,stroke:#8a7a5c,color:#000
-    style engine fill:#e8eef7,stroke:#1f3d7a,color:#000
-    style ai fill:#f0e8f5,stroke:#6b3d7a,color:#000
-    style ui fill:#e8f5ec,stroke:#2d7a4f,color:#000
+    classDef d fill:#f5f0e8,stroke:#8a7a5c,color:#111,stroke-width:1.5px
+    classDef e fill:#e8eef7,stroke:#1f3d7a,color:#111,stroke-width:2px
+    classDef a fill:#f0e8f5,stroke:#6b3d7a,color:#111,stroke-width:1.5px
+    classDef u fill:#e8f5ec,stroke:#2d7a4f,color:#111,stroke-width:1.5px
+    class A1,A2 d
+    class B,C,D e
+    class E,F a
+    class G,H,I u
+    style dossier fill:#faf7f1,stroke:#8a7a5c
+    style engine fill:#f3f6fb,stroke:#1f3d7a,stroke-width:2.5px
+    style ai fill:#f8f3fa,stroke:#6b3d7a
+    style ui fill:#f2faf5,stroke:#2d7a4f
 ```
 
 **The contract:** the engine decides every number (deterministic, cited) · AI writes language
-only (validated) · the knowledge graph connects entities (cross-validation) · the auditor
-decides verdicts.
+only (validated token-by-token) · the knowledge graph connects entities and cross-validates ·
+the auditor decides verdicts — which flow back into the graph as fraud nodes.
 
 ## Review console (the auditor workflow)
 
@@ -117,8 +136,11 @@ decides verdicts.
   the finding queue; every queue item shows confidence, amount, and evidence count at a glance.
 - **Clickable evidence**: each `file:row` citation opens the actual source record in-app with the
   cited row highlighted in context (`/api/source`).
-- **Ask the brain**: live Q&A against the Cognee knowledge graph, answers cross-checked against
-  deterministic findings.
+- **Chat with the case**: a floating chat window (OpenAI, grounded in engine findings +
+  Cognee knowledge-graph recall) — the model may explain a number, never invent one; it
+  falls back to the raw graph answer if OpenAI is unreachable.
+- **Source viewers for every evidence type**: csv/txt tables with the cited row highlighted
+  in context, xlsx sheets, PDF pages, and docx workpapers (e.g. the audit-planning document).
 - **PDF report**: one click produces a formal audit report (scheme headlines, methodology,
   evidence citations, human verdicts). Plus in-app preview and Markdown export.
 
@@ -145,12 +167,13 @@ decides verdicts.
 pip install openpyxl            # xlsx parsing; pdftotext (poppler) optional for PDFs
 ```
 
-Optional, for the "Ask the brain" panel — a Cognee Cloud account:
+Optional, for the case chat and "Ask the brain" panel:
 
 ```bash
 # .env  (never committed)
-COGNEE_BASE_URL=https://<tenant>.aws.cognee.ai
+COGNEE_BASE_URL=https://<tenant>.aws.cognee.ai   # knowledge graph
 COGNEE_API_KEY=<key>
+OPENAI_API_KEY=<key>                             # chat + explanation layer
 ```
 
 ## Run
