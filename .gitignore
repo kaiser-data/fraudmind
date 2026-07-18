@@ -8,3 +8,6 @@ dataset.json
 *.zip
 HANDOFF.md
 QUESTIONS_TRACK_OWNER.md
+uploads/
+frontend/node_modules/
+graphify-out/
