@@ -1,0 +1,10 @@
+.env
+.DS_Store
+__pycache__/
+.ruff_cache/
+build/
+dataset/
+dataset.json
+*.zip
+HANDOFF.md
+QUESTIONS_TRACK_OWNER.md

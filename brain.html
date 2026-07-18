@@ -1,0 +1,312 @@
+<title>Fraud Brain — Muster Verpackungen FY2025</title>
+<style>
+:root{
+  --paper:#F7F5F0; --card:#FFFFFF; --ink:#20242B; --ink2:#5A6068; --ink3:#8A9098;
+  --line:#E3E0D8; --accent:#0E6660; --accent-ink:#0B524D;
+  --flag:#A93831; --flag-bg:#F7E9E7; --rev:#9A6A14; --rev-bg:#F5EEDD;
+  --ok:#3E7A4C; --ok-bg:#E8F0E9; --info:#5A6068; --info-bg:#EDECE8;
+}
+@media (prefers-color-scheme: dark){:root{
+  --paper:#171A1F; --card:#1F242B; --ink:#E8E6E0; --ink2:#A8ADB5; --ink3:#767C85;
+  --line:#31363E; --accent:#4FB3AA; --accent-ink:#6FC7BF;
+  --flag:#E06A5F; --flag-bg:#3A2523; --rev:#D9A63F; --rev-bg:#352C1A;
+  --ok:#6FB37D; --ok-bg:#1F3024; --info:#A8ADB5; --info-bg:#282D34;
+}}
+:root[data-theme="dark"]{
+  --paper:#171A1F; --card:#1F242B; --ink:#E8E6E0; --ink2:#A8ADB5; --ink3:#767C85;
+  --line:#31363E; --accent:#4FB3AA; --accent-ink:#6FC7BF;
+  --flag:#E06A5F; --flag-bg:#3A2523; --rev:#D9A63F; --rev-bg:#352C1A;
+  --ok:#6FB37D; --ok-bg:#1F3024; --info:#A8ADB5; --info-bg:#282D34;
+}
+:root[data-theme="light"]{
+  --paper:#F7F5F0; --card:#FFFFFF; --ink:#20242B; --ink2:#5A6068; --ink3:#8A9098;
+  --line:#E3E0D8; --accent:#0E6660; --accent-ink:#0B524D;
+  --flag:#A93831; --flag-bg:#F7E9E7; --rev:#9A6A14; --rev-bg:#F5EEDD;
+  --ok:#3E7A4C; --ok-bg:#E8F0E9; --info:#5A6068; --info-bg:#EDECE8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
+.wrap{max-width:1060px;margin:0 auto;padding:28px 20px 64px}
+.serif{font-family:Charter,"Iowan Old Style",Georgia,serif}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 18px;
+  border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:22px}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:11px;color:var(--accent);font-weight:600}
+h1{font-size:34px;margin:2px 0 0;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+h1 em{font-style:normal;color:var(--accent)}
+.meta{margin-left:auto;color:var(--ink2);font-size:12.5px;text-align:right}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink2);
+  margin:34px 0 12px;font-weight:650}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 16px}
+.tile .n{font-size:30px;font-weight:700;letter-spacing:-.01em}
+.tile .l{font-size:12px;color:var(--ink2);margin-top:2px}
+.tile.flag .n{color:var(--flag)} .tile.rev .n{color:var(--rev)} .tile.acc .n{color:var(--accent)}
+/* impact bars */
+.bars{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px 18px}
+.brow{display:grid;grid-template-columns:230px 1fr 110px;gap:12px;align-items:center;padding:7px 0}
+.brow+.brow{border-top:1px solid var(--line)}
+.brow .bl{font-size:13.5px}
+.btrack{height:14px;position:relative}
+.bfill{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:0 4px 4px 0;min-width:3px}
+.brow .bv{text-align:right;font-size:13.5px;font-weight:600}
+/* scheme board */
+.board{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.scheme{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--flag);
+  border-radius:6px;padding:14px 16px}
+.scheme h3{margin:0 0 6px;font-size:15.5px;line-height:1.35}
+.scheme p{margin:0;color:var(--ink2);font-size:13.5px}
+.scheme .amt{float:right;font-weight:700;font-size:15px;margin-left:10px}
+.scheme .fid{color:var(--ink3);font-size:11.5px;letter-spacing:.06em;margin-top:8px}
+/* filter chips */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--ink2);border-radius:99px;
+  padding:5px 14px;font-size:13px;cursor:pointer;font-weight:550}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.chip:focus-visible,.pill:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* register */
+.reg details{background:var(--card);border:1px solid var(--line);border-radius:6px;margin-bottom:8px}
+.reg summary{display:grid;grid-template-columns:46px 110px 1fr 110px;gap:10px;align-items:center;
+  padding:10px 14px;cursor:pointer;list-style:none}
+.reg summary::-webkit-details-marker{display:none}
+.reg summary:hover{background:color-mix(in srgb,var(--card) 92%,var(--ink))}
+.fidc{color:var(--ink3);font-size:12px}
+.pill{font-size:10.5px;font-weight:700;letter-spacing:.08em;border-radius:4px;padding:3px 7px;
+  text-align:center;text-transform:uppercase}
+.pill.FLAGGED{color:var(--flag);background:var(--flag-bg)}
+.pill.NEEDS_REVIEW{color:var(--rev);background:var(--rev-bg)}
+.pill.INFO{color:var(--info);background:var(--info-bg)}
+.ft{font-size:14px;line-height:1.4}
+.fa{text-align:right;font-size:13px;font-weight:600;white-space:nowrap}
+.fbody{padding:2px 14px 14px;border-top:1px solid var(--line)}
+.fbody p{margin:10px 0;color:var(--ink2);font-size:13.5px;max-width:72ch}
+.provs{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.prov{font-size:11px;background:var(--paper);border:1px solid var(--line);border-radius:4px;
+  padding:3px 7px;color:var(--ink2)}
+.conf{color:var(--ink3);font-size:12px}
+/* ask the brain */
+.askbox{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);
+  border-radius:6px;padding:16px 18px}
+#askform{display:flex;gap:8px;flex-wrap:wrap}
+#q{flex:1;min-width:240px;padding:9px 12px;font:inherit;color:var(--ink);
+  background:var(--paper);border:1px solid var(--line);border-radius:6px}
+#q:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.askbtn{padding:9px 18px;font:inherit;font-weight:600;color:#fff;background:var(--accent);
+  border:none;border-radius:6px;cursor:pointer}
+.askbtn:disabled{opacity:.6;cursor:wait}
+#askout .ans{margin-top:14px;padding:12px 14px;background:var(--paper);border:1px solid var(--line);
+  border-radius:6px;font-size:13.5px;color:var(--ink);max-width:78ch;white-space:pre-wrap}
+#askout .src{margin-top:6px;font-size:11.5px;color:var(--ink3)}
+#askout .xchk{margin-top:10px;font-size:12.5px;color:var(--ink2)}
+#askout .xchk .prov{margin-left:4px}
+#askout .err{margin-top:12px;color:var(--flag);font-size:13px}
+/* calibration */
+.calib{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--ok);
+  border-radius:6px;padding:16px 18px}
+.calib ul{margin:0;padding-left:18px}
+.calib li{margin:7px 0;color:var(--ink2);font-size:13.5px;max-width:80ch}
+.calib b{color:var(--ok)}
+footer{margin-top:30px;color:var(--ink3);font-size:12.5px;border-top:1px solid var(--line);padding-top:14px}
+footer code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--card);
+  border:1px solid var(--line);border-radius:4px;padding:2px 6px}
+@media (max-width:640px){
+  .brow{grid-template-columns:1fr;gap:4px}.brow .bv{text-align:left}
+  .reg summary{grid-template-columns:44px 1fr;grid-auto-rows:auto}
+  .fa{text-align:left}.meta{margin-left:0;text-align:left}}
+</style>
+
+<div class="wrap">
+<header>
+  <div>
+    <div class="eyebrow">cortea fraud-hunt · Berlin Summer Lock-In · practice dossier</div>
+    <h1 class="serif">Fraud <em>Brain</em> — Muster Verpackungen GmbH, FY2025</h1>
+  </div>
+  <div class="meta mono">deterministic engine · ingest.py + checks.py<br>
+    run 2026-07-18 12:15 · pipeline &lt; 5 s · 20,258 GL rows · 3,482 chains</div>
+</header>
+
+<section class="tiles" aria-label="Summary">
+  <div class="tile flag"><div class="n">11</div><div class="l">FLAGGED — deterministic control violations</div></div>
+  <div class="tile rev"><div class="n">6</div><div class="l">NEEDS REVIEW — judgment required</div></div>
+  <div class="tile acc"><div class="n mono">€638k</div><div class="l">quantified impact across 4 schemes</div></div>
+  <div class="tile"><div class="n mono">23 min</div><div class="l">handoff → validated findings (build time)</div></div>
+</section>
+
+<h2>Impact by scheme</h2>
+<div class="bars" role="img" aria-label="Bar list: Ratio Consulting cash-out €295,120; unrecorded liabilities €192,000; capitalized repairs €150,800; split payments €39,040">
+  <div class="brow"><span class="bl">Related-party cash-out — Ratio Consulting</span>
+    <span class="btrack"><span class="bfill" style="width:100%" title="€295,120 — 5 invoices, all paid in 2 days, zero deliverables"></span></span>
+    <span class="bv mono">€295,120</span></div>
+  <div class="brow"><span class="bl">Unrecorded liabilities (cut-off, 8 ghost vendors)</span>
+    <span class="btrack"><span class="bfill" style="width:65%" title="€192,000 — Dec-2025 services invoiced Jan-2026, no accrual"></span></span>
+    <span class="bv mono">€192,000</span></div>
+  <div class="brow"><span class="bl">Repairs capitalized as fixed assets (6 additions)</span>
+    <span class="btrack"><span class="bfill" style="width:51%" title="€150,800 — Reparatur/Austausch/Instandsetzung booked as assets"></span></span>
+    <span class="bv mono">€150,800</span></div>
+  <div class="brow"><span class="bl">Split payments under €10k approval limit</span>
+    <span class="btrack"><span class="bfill" style="width:13%" title="€39,040 — 4 same-day payments, Castor Papier"></span></span>
+    <span class="bv mono">€39,040</span></div>
+</div>
+
+<h2>The five schemes</h2>
+<section class="board">
+  <div class="scheme"><span class="amt mono">€295,120</span><h3>1 · Phantom vendor “Ratio Consulting”</h3>
+    <p>MV-U05 created <strong>and</strong> approved vendor 209101 incl. bank details, holds
+    create-vendor + book + payment-run rights, no approval right. 5 consulting invoices, each paid
+    2 days after invoice date, zero delivery evidence.</p><div class="fid">F001 · conf 0.95</div></div>
+  <div class="scheme"><span class="amt mono">€192,000</span><h3>2 · Cut-off via 8 ghost vendors</h3>
+    <p>Vendors 209130–137 (“Musterort”) created past the approval control, Dec-2025 services
+    invoiced Jan-2026, no FY2025 accrual. Triple-corroborated: change-log absence + service dates
+    + ER sequence gap 901427–434.</p><div class="fid">F002 · F010 · F014 · conf 0.90</div></div>
+  <div class="scheme"><span class="amt mono">€150,800</span><h3>3 · Repairs capitalized as assets</h3>
+    <p>Six additions named Reparatur / Austausch / Instandsetzung / Generalüberholung — period
+    expense moved to the balance sheet (JET K3).</p><div class="fid">F003–F009 · conf 0.85</div></div>
+  <div class="scheme"><span class="amt mono">€39,040</span><h3>4 · Split payments (K5)</h3>
+    <p>Castor Papier: 4 payments on the same day, each just under €10,000 — a single obligation
+    split below the second-approval threshold.</p><div class="fid">F004 · conf 0.85</div></div>
+  <div class="scheme"><span class="amt mono">—</span><h3>5 · Opening balances unverifiable</h3>
+    <p>Prior-year trial balance is empty (headers only) while the IT attestation claims export
+    completeness — the €36.8M opening layer has no source.</p><div class="fid">F011 · conf 0.90</div></div>
+</section>
+
+<h2>Ask the brain — live Cognee knowledge graph</h2>
+<div class="askbox">
+  <form id="askform">
+    <input id="q" type="text" placeholder="e.g. How is MV-U05 connected to Ratio Consulting?"
+      autocomplete="off" aria-label="Question for the knowledge graph">
+    <button type="submit" class="askbtn">Ask Cognee</button>
+  </form>
+  <div id="askout" aria-live="polite"></div>
+</div>
+
+<h2>Findings register — every number cites its source</h2>
+<div class="chips" role="group" aria-label="Filter by tier">
+  <button class="chip" aria-pressed="true"  data-t="ALL">All 18</button>
+  <button class="chip" aria-pressed="false" data-t="FLAGGED">Flagged 11</button>
+  <button class="chip" aria-pressed="false" data-t="NEEDS_REVIEW">Needs review 6</button>
+  <button class="chip" aria-pressed="false" data-t="INFO">Info 1</button>
+</div>
+<div class="reg" id="reg"></div>
+
+<h2>Deliberately not flagged — false-positive protection</h2>
+<div class="calib">
+  <ul>
+    <li><b>Weekend postings:</b> 28.5% of ALL GL entries are weekend-entered — routine here.
+      Time flags require the pattern to be rare (&lt;5% baseline), computed from the dossier itself.</li>
+    <li><b>Near-limit payment pairs months apart</b> (Ost Kunststoff, Nova Recycling …): normal
+      business — excluded by the 7-day clustering rule. These were the seeded innocent traps.</li>
+    <li><b>Tie-outs verified clean:</b> AR €13,412,543.05 and AP −€13,208,855 reconcile exactly to
+      control accounts 230000/330000 and the provided Abstimmung.</li>
+    <li><b>Credit-limit report:</b> every AUSNUTZUNG value matches the computed year-end balance.</li>
+    <li><b>Journal approval log:</b> full coverage, no self-approvals, all “Freigegeben” — the
+      control operated.</li>
+  </ul>
+</div>
+
+<footer>
+  Rules decide; the LLM only explains. Thresholds read from the dossier's own JET workpaper
+  (materiality €400k · de-minimis €25k · approval limit €10k). Same pipeline runs unchanged on the
+  final dossier: <code>python3 ingest.py &lt;path&gt; &amp;&amp; python3 checks.py &lt;path&gt;</code>
+</footer>
+</div>
+
+<script>
+const F=[
+{id:"F001",t:"FLAGGED",s:"CRITICAL",c:.95,a:"€295,120",ti:"Self-approved vendor master change by MV-U05: Ratio Consulting GmbH (209101)",
+ x:"MV-U05 changed AND approved master data for 209101 (Neuanlage Kreditor incl. bank details) on 12.05.2025 — four-eyes violation. MV-U05 holds Buchen + Zahlungslauf + Stammdaten anlegen and no approval right. Cash-out: 5 invoices totalling €295,120, all paid avg 2.0 days after invoice, 0 goods receipts.",
+ p:["Stammdatenaenderungen_2025.csv:row8","Berechtigungsauswertung_2025.xlsx#Berechtigungen","Lieferantenbuchungen.txt:rows2553–2562"]},
+{id:"F002",t:"FLAGGED",s:"CRITICAL",c:.9,a:"€192,000",ti:"Unrecorded liabilities: 8 next-period vendor invoices for 2025 services, no 2025 accrual",
+ x:"Jan-2026 invoices carry LEISTUNGSDATUM 19.–27.12.2025 ('Frachten Dez 2025' …). None of the 8 vendors has any 2025 AP booking → no accrual recognized. Expenses understated, profit overstated ~€192,000 (K4).",
+ p:["Fakturajournal_Januar_2026_Kreditoren.csv:rows2–9"]},
+{id:"F003",t:"FLAGGED",s:"HIGH",c:.85,a:"€41,000",ti:"Repair capitalized as asset: Generalüberholung Stanzautomat (040000-000194)",
+ x:"Asset addition 26.11.2025, doc ER901424 — repair-typical description; period expense, not capitalizable (K3).",
+ p:["AV/Anlagen.txt:row194","AV/Anlagenbuchungen.txt:row52","Lieferantenbuchungen.txt:row2566"]},
+{id:"F004",t:"FLAGGED",s:"HIGH",c:.85,a:"€39,040",ti:"4 same-day payments to Castor Papier GmbH, each just under the €10,000 approval limit",
+ x:"14.10.2025: €9,780 / €9,820 / €9,750 / €9,690, text 'Teilzahlung Lieferantenrechnung', doc SAMMEL-200007 — one obligation split below the second-approval threshold (K5).",
+ p:["Lieferantenbuchungen.txt:rows2569–2572","Pruefungsplanung_JET_2025.docx"]},
+{id:"F005",t:"FLAGGED",s:"HIGH",c:.85,a:"€34,000",ti:"Repair capitalized as asset: Austausch Hydraulikaggregat Presse 3 (040000-000192)",
+ x:"Asset addition 04.03.2025, doc ER901422 — repair-typical description (K3).",
+ p:["AV/Anlagen.txt:row192","AV/Anlagenbuchungen.txt:row50","Lieferantenbuchungen.txt:row2564"]},
+{id:"F006",t:"FLAGGED",s:"HIGH",c:.85,a:"€28,000",ti:"Repair capitalized as asset: Reparatur Konfektioniermaschine Linie 2 (040000-000191)",
+ x:"Asset addition 20.11.2025, doc ER901421 — repair-typical description (K3).",
+ p:["AV/Anlagen.txt:row191","AV/Anlagenbuchungen.txt:row49","Lieferantenbuchungen.txt:row2563"]},
+{id:"F007",t:"FLAGGED",s:"HIGH",c:.85,a:"€19,500",ti:"Repair capitalized as asset: Austausch Antriebssteuerung Palettierer (040000-000196)",
+ x:"Asset addition 20.11.2025, doc ER901426 — repair-typical description (K3).",
+ p:["AV/Anlagen.txt:row196","AV/Anlagenbuchungen.txt:row54","Lieferantenbuchungen.txt:row2568"]},
+{id:"F008",t:"FLAGGED",s:"HIGH",c:.85,a:"€15,500",ti:"Repair capitalized as asset: Instandsetzung Förderband Halle II (060000-000193)",
+ x:"Asset addition 13.03.2025, doc ER901423 — repair-typical description (K3).",
+ p:["AV/Anlagen.txt:row193","AV/Anlagenbuchungen.txt:row51","Lieferantenbuchungen.txt:row2565"]},
+{id:"F009",t:"FLAGGED",s:"HIGH",c:.85,a:"€12,800",ti:"Repair capitalized as asset: Reparatur Kälteanlage Lager (060000-000195)",
+ x:"Asset addition 23.05.2025, doc ER901425 — repair-typical description (K3).",
+ p:["AV/Anlagen.txt:row195","AV/Anlagenbuchungen.txt:row53","Lieferantenbuchungen.txt:row2567"]},
+{id:"F010",t:"FLAGGED",s:"HIGH",c:.9,a:"",ti:"8 new vendors have no creation entry in the master-data change log",
+ x:"209130–209137, all city 'Musterort', no opening balance, no 2025 activity, no 'Neuanlage Kreditor' record — the documented, approval-required creation control was bypassed. Corroborates F002.",
+ p:["Lieferanten.txt:rows132–139","Stammdatenaenderungen_2025.csv"]},
+{id:"F011",t:"FLAGGED",s:"HIGH",c:.9,a:"",ti:"Prior-year trial balance empty while IT attestation claims completeness",
+ x:"Saldenliste_2024_Vorjahr.xlsx has headers only — the AB-2024 opening layer (€36.8M movement) cannot be verified — yet the IT attestation asserts export completeness. Contradiction between provided evidence documents.",
+ p:["Saldenliste_2024_Vorjahr.xlsx","IT-Bestaetigung_Vollstaendigkeit_2025.pdf"]},
+{id:"F012",t:"NEEDS_REVIEW",s:"MEDIUM",c:.6,a:"€480,000",ti:"Large single asset addition: Produktionslinie Verpackung X500 (doc ER901435)",
+ x:"17.06.2025, vendor 200003, €571,200 gross, no goods receipt on file, >50% of materiality. Verify existence and Investitionsantrag IA-2025-04. Plausibly legitimate capex.",
+ p:["AV/Anlagen.txt:row197","AV/Anlagenbuchungen.txt:row55","Lieferantenbuchungen.txt:row2573"]},
+{id:"F013",t:"NEEDS_REVIEW",s:"MEDIUM",c:.65,a:"€328,403",ti:"Bank details changed for Delta Logistik SE (200075); 4 payments afterwards",
+ x:"Change 14.09.2025, approved by MV-U02. Classic payment-redirection vector — verify the new IBAN against an independent vendor confirmation.",
+ p:["Stammdatenaenderungen_2025.csv:row14","Lieferantenbuchungen.txt:rows2076–2468"]},
+{id:"F014",t:"NEEDS_REVIEW",s:"MEDIUM",c:.7,a:"",ti:"8 missing document numbers in ER range — exactly the Jan-2026 invoices",
+ x:"ER901427–ER901434 are absent from the 2025 range and reappear in the next-period journal: numbers issued but kept out of FY2025. Independent third-source confirmation of the cut-off scheme (F002).",
+ p:["Fakturajournal_2025.csv","Lieferantenbuchungen.txt"]},
+{id:"F015",t:"NEEDS_REVIEW",s:"MEDIUM",c:.65,a:"€22,015",ti:"Invoice AR502040 booked in subledger/GL but absent from Fakturajournal and goods list",
+ x:"Customer 100100 (KRONOS TRANSPORT SE), booked by MV-U08, reversed 2 days later by credit note SG502041 — likely a corrected mis-booking (decoy). Review the reversal chain; not flagged as fraud.",
+ p:["Kundenbuchungen.txt:row3748","Sachkontobuchungen.txt:rows20253–55"]},
+{id:"F016",t:"NEEDS_REVIEW",s:"MEDIUM",c:.6,a:"",ti:"300 vendor invoices with material-like text but no goods receipt",
+ x:"Of 589 AP bookings without goods receipt most are services; these 300 have material-like texts (Bezugsnebenkosten, Fuhrpark, Konzernumlage …) — population-level completeness check (K2), one aggregate item.",
+ p:["Lieferantenbuchungen.txt (300 rows, samples in findings.json)"]},
+{id:"F017",t:"NEEDS_REVIEW",s:"MEDIUM",c:.6,a:"",ti:"Near-duplicate vendors in Hannover: Nord Logistik GmbH / Nordlicht Logistik GmbH",
+ x:"209110 vs 209111, both active with generic 'Eingangsrechnung Logistik' texts. Verify distinct legal entities (VAT DE459514202 vs DE743864625).",
+ p:["Lieferanten.txt:rows140–141"]},
+{id:"F018",t:"INFO",s:"INFO",c:1,a:"",ti:"Posting-time profile: 29% of entries on weekends, 0% at night",
+ x:"Baseline computed from the full GL. Time-based flags require the pattern in <5% of postings — routine behaviour of this company is not misreported as anomalous.",
+ p:["Sachkontobuchungen.txt","Pruefungsplanung_JET_2025.docx"]}
+];
+const reg=document.getElementById('reg');
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+reg.innerHTML=F.map(f=>`<details data-t="${f.t}"><summary>
+  <span class="fidc mono">${f.id}</span>
+  <span class="pill ${f.t}">${f.t.replace('_',' ')}</span>
+  <span class="ft">${esc(f.ti)}</span>
+  <span class="fa mono">${f.a}</span></summary>
+  <div class="fbody"><p>${esc(f.x)}</p>
+  <div class="provs">${f.p.map(p=>`<span class="prov mono">${esc(p)}</span>`).join('')}
+  <span class="conf">confidence ${f.c}</span></div></div></details>`).join('');
+const form=document.getElementById('askform'),qEl=document.getElementById('q'),
+      out=document.getElementById('askout'),btn=form.querySelector('.askbtn');
+form.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const q=qEl.value.trim(); if(!q) return;
+  btn.disabled=true; out.innerHTML='<div class="src">Asking the knowledge graph…</div>';
+  try{
+    const r=await fetch('/api/ask',{method:'POST',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})});
+    if(!r.ok) throw new Error((await r.json().catch(()=>({}))).detail||('HTTP '+r.status));
+    const d=await r.json();
+    let h=d.answers.length
+      ? d.answers.map(a=>`<div class="ans">${esc(a.text)}</div>
+          <div class="src">source: Cognee ${esc(a.source||'graph')} · dataset ${esc(a.dataset)}</div>`).join('')
+      : '<div class="ans">The graph returned no answer for this question.</div>';
+    if(d.related_findings.length)
+      h+='<div class="xchk"><strong>Cross-check against the books:</strong> '+
+        d.related_findings.map(f=>`${f.id} (${f.tier.replace('_',' ')}) — ${esc(f.title)}`+
+          f.provenance.map(p=>`<span class="prov mono">${esc(p)}</span>`).join('')).join('<br>')+
+        '</div>';
+    out.innerHTML=h;
+  }catch(err){out.innerHTML=`<div class="err">Cognee request failed: ${esc(String(err.message||err))}</div>`;}
+  finally{btn.disabled=false;}
+});
+document.querySelectorAll('.chip').forEach(ch=>ch.addEventListener('click',()=>{
+  document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+  ch.setAttribute('aria-pressed','true');
+  const t=ch.dataset.t;
+  document.querySelectorAll('#reg details').forEach(d=>{
+    d.style.display=(t==='ALL'||d.dataset.t===t)?'':'none';});
+}));
+</script>
