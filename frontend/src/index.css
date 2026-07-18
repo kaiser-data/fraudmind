@@ -188,13 +188,16 @@ body {
   color: var(--serious); }
 .joblog-done .joblog-stage { color: var(--good); }
 
-/* ---------- review layout ---------- */
-.review { display: grid; grid-template-columns: 330px 1fr; gap: 22px;
-  max-width: 1240px; margin: 0 auto; align-items: start; }
+/* ---------- review layout (screen-fit: page never scrolls, panes do) --- */
+.review { display: grid; grid-template-columns: 340px 1fr; gap: 22px;
+  max-width: 1280px; margin: 0 auto; align-items: stretch;
+  height: calc(100vh - 165px); min-height: 460px; }
 
 .queue { background: var(--panel); border: 1px solid var(--line);
-  border-radius: 10px; padding: 14px; position: sticky; top: 16px; }
-.queue ul { list-style: none; max-height: 62vh; overflow-y: auto; }
+  border-radius: 10px; padding: 14px; display: flex;
+  flex-direction: column; min-height: 0; }
+.queue ul { list-style: none; flex: 1; min-height: 80px;
+  overflow-y: auto; }
 .queue-progress { font-size: 12px; color: var(--ink-2);
   margin-bottom: 10px; }
 .bar { display: block; height: 5px; background: var(--line);
@@ -212,15 +215,48 @@ body {
   background: var(--ledger-soft); }
 .queue-reviewed .queue-title { color: var(--ink-3); }
 .queue-id { font-size: 12px; font-weight: 600; }
-.queue-title { grid-column: 1 / -1; color: var(--ink-2); line-height: 1.35;
-  display: -webkit-box; -webkit-line-clamp: 2;
+.queue-scheme { grid-column: 1 / -1; font-weight: 600; font-size: 12.5px;
+  color: var(--ink); line-height: 1.3; }
+.queue-meta { grid-column: 1 / -1; font-size: 11px; color: var(--ledger); }
+.queue-title { grid-column: 1 / -1; color: var(--ink-3); font-size: 12px;
+  line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 1;
   -webkit-box-orient: vertical; overflow: hidden; }
 .queue-verdict { font-size: 12px; }
 .queue-finish { width: 100%; margin-top: 12px; }
 
+/* ---------- action panel (auditor decision, left column) ---------- */
+.action-panel { border-top: 2px solid var(--line); margin-top: 10px;
+  padding-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.action-label { font-family: var(--mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3); }
+.action-panel .btn { width: 100%; text-align: left; }
+.action-panel .verdict-note { width: 100%; min-width: 0; }
+
+/* ---------- scheme banner (what kind of case this is) ---------- */
+.scheme-banner { background: var(--ledger-soft);
+  border-left: 3px solid var(--ledger); border-radius: 0 8px 8px 0;
+  padding: 10px 14px; margin-bottom: 14px; }
+.scheme-kind { font-family: var(--mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--ledger); margin-bottom: 2px; }
+.scheme-label { font-weight: 600; font-size: 15px; }
+.scheme-meaning { font-size: 13px; line-height: 1.5; color: var(--ink-2);
+  margin-top: 4px; }
+
+/* ---------- progressive-disclosure folds ---------- */
+.fold { border: 1px solid var(--line); border-radius: 8px;
+  margin-bottom: 10px; }
+.fold summary { cursor: pointer; padding: 10px 14px; font-size: 13.5px;
+  font-weight: 600; color: var(--ink-2); user-select: none; }
+.fold summary:hover { color: var(--ledger); }
+.fold[open] summary { border-bottom: 1px solid var(--line); }
+.fold > *:not(summary) { margin: 12px 14px; }
+.fold .engine-box, .fold .prov-row, .fold .chart { margin-bottom: 12px; }
+
 /* ---------- docket ---------- */
 .docket { background: var(--panel); border: 1px solid var(--line);
-  border-radius: 10px; padding: 26px 30px; }
+  border-radius: 10px; padding: 26px 30px; overflow-y: auto;
+  min-height: 0; }
 
 .docket-head { display: flex; align-items: center; gap: 12px;
   flex-wrap: wrap; margin-bottom: 14px; }
@@ -263,6 +299,30 @@ body {
 .prov-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
 .prov-chip { font-size: 11.5px; background: var(--ledger-soft);
   color: var(--ledger); padding: 3px 8px; border-radius: 4px; }
+.prov-link { border: 1px solid transparent; cursor: pointer; }
+.prov-link:hover { border-color: var(--ledger);
+  text-decoration: underline; }
+
+/* ---------- source record viewer ---------- */
+.source-view { border: 1px solid var(--ledger); border-radius: 8px;
+  margin-top: 4px; padding: 10px 12px; background: var(--paper); }
+.source-head { display: flex; justify-content: space-between;
+  align-items: center; font-size: 12px; margin-bottom: 8px;
+  color: var(--ink-2); }
+.source-scroll { overflow-x: auto; }
+.source-scroll table { border-collapse: collapse; font-size: 11.5px;
+  font-family: var(--mono); white-space: nowrap; }
+.source-scroll th { text-align: left; padding: 4px 8px;
+  border-bottom: 2px solid var(--line); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.03em;
+  color: var(--ink-3); position: sticky; top: 0;
+  background: var(--paper); }
+.source-scroll td { padding: 4px 8px;
+  border-bottom: 1px solid var(--line); }
+.source-target { background: var(--warn-soft); }
+.source-target td { font-weight: 700; }
+.source-pdf { font-family: var(--mono); font-size: 11px;
+  white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
 
 /* ---------- chart ---------- */
 .chart { border: 1px solid var(--line); border-radius: 8px;
@@ -291,10 +351,8 @@ body {
 .prov-cell { color: var(--ink-3); font-size: 11px; }
 .num { text-align: right; }
 
-/* ---------- verdict bar ---------- */
-.verdict-bar { display: flex; gap: 10px; align-items: center;
-  border-top: 1px solid var(--line); padding-top: 16px; flex-wrap: wrap; }
-.verdict-note { flex: 1; min-width: 220px; font-family: var(--sans);
+/* ---------- verdict controls ---------- */
+.verdict-note { font-family: var(--sans);
   font-size: 14px; padding: 9px 12px; border: 1px solid var(--line);
   border-radius: 7px; }
 .verdict-note:focus { outline: 2px solid var(--ledger);
@@ -328,8 +386,54 @@ body {
 
 /* ---------- responsive ---------- */
 @media (max-width: 900px) {
-  .review { grid-template-columns: 1fr; }
+  .review { grid-template-columns: 1fr; height: auto; }
   .queue { position: static; }
+  .queue ul { max-height: 40vh; }
   .assurance { display: none; }
-  .docket { padding: 18px; }
+  .docket { padding: 18px; overflow-y: visible; }
+}
+
+/* ---------- print: formal PDF report ---------- */
+.print-report { display: none; }
+.print-report.print-preview { display: block; background: #fff;
+  color: #111; border: 1px solid var(--line); border-radius: 10px;
+  padding: 34px 40px; margin-top: 22px; max-width: 900px; }
+.print-preview h1 { font-family: var(--serif); font-size: 26px;
+  margin-bottom: 10px; }
+.print-preview h2 { font-family: var(--serif); font-size: 17px;
+  margin-bottom: 5px; }
+.print-preview .pr-meta { font-size: 13px; margin-bottom: 8px; }
+.print-preview .pr-method { font-size: 12.5px; color: #333;
+  margin-bottom: 18px; border-bottom: 1px solid #999;
+  padding-bottom: 10px; }
+.print-preview .pr-finding { margin-bottom: 16px; }
+.print-preview .pr-title { font-style: italic; }
+.print-preview .pr-line { font-size: 13px; margin-bottom: 3px; }
+.print-preview .pr-exp { font-size: 12.5px; line-height: 1.5;
+  color: #222; margin: 4px 0; }
+.print-preview .pr-evidence { font-family: var(--mono); font-size: 10.5px;
+  color: #444; }
+.print-preview .pr-foot { margin-top: 20px; font-size: 12px; color: #555;
+  border-top: 1px solid #999; padding-top: 8px; }
+
+@media print {
+  body * { visibility: hidden; }
+  .print-report, .print-report * { visibility: visible; }
+  .print-report { display: block; position: absolute; inset: 0 auto auto 0;
+    width: 100%; padding: 0; background: #fff; color: #111; }
+  .print-report h1 { font-family: var(--serif); font-size: 21pt;
+    margin-bottom: 8pt; }
+  .print-report h2 { font-family: var(--serif); font-size: 13pt;
+    margin-bottom: 4pt; }
+  .pr-meta { font-size: 10pt; margin-bottom: 6pt; }
+  .pr-method { font-size: 9.5pt; color: #333; margin-bottom: 14pt;
+    border-bottom: 1pt solid #999; padding-bottom: 8pt; }
+  .pr-finding { margin-bottom: 12pt; break-inside: avoid; }
+  .pr-title { font-style: italic; }
+  .pr-line { font-size: 10pt; margin-bottom: 2pt; }
+  .pr-exp { font-size: 9.5pt; line-height: 1.45; color: #222;
+    margin: 3pt 0; }
+  .pr-evidence { font-family: var(--mono); font-size: 8pt; color: #444; }
+  .pr-foot { margin-top: 16pt; font-size: 9pt; color: #555;
+    border-top: 1pt solid #999; padding-top: 6pt; }
 }

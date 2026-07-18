@@ -57,3 +57,21 @@ export interface BrainUpdateResult {
   nodes: number
   cognee_pushed: boolean
 }
+
+export interface SourceRow {
+  n: number
+  cells: string[]
+  target: boolean
+}
+
+export interface SourceView {
+  ref: string
+  kind?: 'table' | 'pdf'
+  file?: string
+  sheet?: string
+  header?: string[]
+  rows?: SourceRow[]
+  page?: number
+  text?: string
+  error?: string
+}

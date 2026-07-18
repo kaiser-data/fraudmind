@@ -54,8 +54,12 @@ source (`file:rowN` / `file#sheet:rowN` / `file:pageN`). LLM explains; rules dec
 
 ## Known generalization risks (open)
 
-- File names are hardcoded in ingest.py (Fakturajournal_2025.csv etc.); a final
-  dossier with renamed files needs a glob/fuzzy fallback.
+- ~~File names hardcoded in ingest.py~~ RESOLVED 2026-07-18: `_find_file()`
+  resolver (exact -> case-insensitive -> digit/separator-stripped match, loud
+  error listing the folder on ambiguity). Evidence: practice dossier rerun
+  identical (18/18 findings byte-equal); year-shifted rename simulation
+  (2025->2026 across all Begleitdokumente) also 18/18 identical titles.
+  Provenance cites the RESOLVED filename so citations stay truthful.
 - GL column order is unreliable — field access for user/entry-no/time uses
   content regex (`77\d{5}`, `MV-U\d+|Admin`, `HH:MM:SS`), keep it that way.
 - VAT factors 1.0/1.19/1.07 for net-vs-gross matching are German rates; fine

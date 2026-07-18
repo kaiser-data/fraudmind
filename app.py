@@ -27,6 +27,7 @@ import sys
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -152,6 +153,88 @@ def parse_multipart(headers, body: bytes):
             continue
         payload = payload.rstrip(b"\r\n").removesuffix(b"--").rstrip(b"\r\n")
         yield fn.group(1).decode("utf-8", errors="replace"), payload
+
+
+# ---------------------------------------------------------------- source viewer
+ACTIVE = {"dossier": PRACTICE_DOSSIER}
+SRC_REF = re.compile(
+    r"^(?P<path>[^:#]+?)(?:#(?P<sheet>[^:]+))?(?::(?P<kind>row|page)(?P<n>\d+))?$")
+CONTEXT_ROWS = 3
+
+
+def _index_columns(dossier: Path, module: str, filename: str) -> list[str]:
+    """Column names for a GDPdU txt table from the module's index.xml."""
+    idx_file = dossier / module / "index.xml"
+    if not idx_file.exists():
+        return []
+    idx = idx_file.read_text(encoding="utf-8", errors="replace")
+    for table in re.findall(r"<Table>(.*?)</Table>", idx, re.S):
+        url = re.search(r"<URL>([^<]+)</URL>", table)
+        if url and url.group(1) == filename:
+            return re.findall(r"<Name>([^<]+)</Name>", table)[1:]
+    return []
+
+
+def source_view(ref: str) -> dict:
+    """Resolve a provenance ref (file:rowN / file#Sheet:rowN / file:pageN)
+    to the source content around the cited location."""
+    m = SRC_REF.match(ref.strip())
+    if not m:
+        return {"error": "unparseable reference"}
+    dossier = ACTIVE["dossier"]
+    target = (dossier / m.group("path")).resolve()
+    if dossier.resolve() not in target.parents or not target.is_file():
+        return {"error": f"source file not in current dossier: {m.group('path')}"}
+    n = int(m.group("n")) if m.group("n") else None
+    suffix = target.suffix.lower()
+
+    if suffix == ".pdf" and n:
+        try:
+            txt = subprocess.run(
+                ["pdftotext", "-layout", "-f", str(n), "-l", str(n),
+                 str(target), "-"],
+                capture_output=True, text=True, timeout=30).stdout
+        except Exception as e:
+            return {"error": f"pdf extraction failed: {e}"}
+        return {"ref": ref, "kind": "pdf", "page": n,
+                "text": txt.strip()[:6000]}
+
+    if suffix == ".xlsx":
+        import openpyxl
+        wb = openpyxl.load_workbook(target, data_only=True, read_only=True)
+        sheet = m.group("sheet")
+        ws = wb[sheet] if sheet and sheet in wb.sheetnames else wb.worksheets[0]
+        data = [[("" if c is None else str(c)) for c in row]
+                for row in ws.iter_rows(values_only=True)]
+        wb.close()
+        header_i = next((i for i, r in enumerate(data)
+                         if sum(bool(c) for c in r) >= 2), 0)
+        header = data[header_i] if data else []
+        if n is None:
+            n = header_i + 2
+        lo = max(header_i + 1, n - 1 - CONTEXT_ROWS)
+        rows = [{"n": i + 1, "cells": data[i], "target": i + 1 == n}
+                for i in range(lo, min(len(data), n - 1 + CONTEXT_ROWS + 1))]
+        return {"ref": ref, "kind": "table", "file": m.group("path"),
+                "sheet": ws.title, "header": header, "rows": rows}
+
+    if suffix in (".csv", ".txt"):
+        lines = target.read_text(encoding="latin-1",
+                                 errors="replace").splitlines()
+        parts = Path(m.group("path")).parts
+        if suffix == ".txt" and len(parts) == 2:
+            header = _index_columns(dossier, parts[0], parts[1])
+        else:
+            header = lines[0].split(";") if lines else []
+        if n is None:
+            n = 2 if suffix == ".csv" else 1
+        lo = max(2 if suffix == ".csv" else 1, n - CONTEXT_ROWS)
+        rows = [{"n": i, "cells": lines[i - 1].split(";"), "target": i == n}
+                for i in range(lo, min(len(lines), n + CONTEXT_ROWS) + 1)]
+        return {"ref": ref, "kind": "table", "file": m.group("path"),
+                "header": [h.strip('"') for h in header], "rows": rows}
+
+    return {"error": f"no viewer for {suffix or 'this file type'}"}
 
 
 # ---------------------------------------------------------------- graph data
@@ -402,6 +485,12 @@ class Handler(BaseHTTPRequestHandler):
                        "text/markdown; charset=utf-8",
                        {"Content-Disposition":
                         'attachment; filename="fraudmind_report.md"'})
+        elif route == "/api/source":
+            query = urllib.parse.parse_qs(
+                urllib.parse.urlsplit(self.path).query)
+            ref = (query.get("ref") or [""])[0]
+            result = source_view(ref) if ref else {"error": "ref required"}
+            self._send(200 if "error" not in result else 404, result)
         else:
             self._send(404, {"detail": "not found"})
 
@@ -420,6 +509,7 @@ class Handler(BaseHTTPRequestHandler):
                 if not dossier.is_dir():
                     self._send(400, {"detail": f"no dossier at {dossier}"})
                     return
+                ACTIVE["dossier"] = dossier
                 started = start_pipeline(dossier)
                 self._send(200 if started else 409,
                            {"started": started})
@@ -460,6 +550,7 @@ class Handler(BaseHTTPRequestHandler):
         if not saved:
             self._send(400, {"detail": "no files received"})
             return
+        ACTIVE["dossier"] = case_dir
         started = start_pipeline(case_dir)
         self._send(200, {"saved": saved, "case": case_dir.name,
                          "started": started})

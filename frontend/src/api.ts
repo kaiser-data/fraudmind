@@ -1,6 +1,6 @@
 import type {
-  BrainUpdateResult, Explanation, Finding, GraphPoint, JobStatus, Verdict,
-  VerdictKind,
+  BrainUpdateResult, Explanation, Finding, GraphPoint, JobStatus,
+  SourceView, Verdict, VerdictKind,
 } from './types'
 
 /* The console runs in two modes:
@@ -74,6 +74,15 @@ export const api = {
     : getJSON<Record<string, Verdict>>('/api/verdicts'),
 
   status: () => getJSON<JobStatus>('/api/status'),
+
+  source: async (ref: string): Promise<SourceView> => {
+    if (staticMode) {
+      return { ref, error: 'Source viewer needs the local console '
+        + '(python3 app.py) — the public demo ships without the dossier.' }
+    }
+    const res = await fetch(`/api/source?ref=${encodeURIComponent(ref)}`)
+    return res.json() as Promise<SourceView>
+  },
 
   saveVerdict: async (id: string, verdict: VerdictKind, note: string) => {
     if (staticMode) {

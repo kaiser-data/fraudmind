@@ -38,6 +38,32 @@ OUT = Path(__file__).parent / "build"
 ENC = "latin-1"
 
 
+def _find_file(directory, filename):
+    """Resolve a dossier file tolerantly: exact name, then case-insensitive,
+    then digit-stripped match (so Fakturajournal_2025.csv finds a 2026 rename).
+    Raises with the folder listing so a final-dossier mismatch is fixable fast."""
+    p = directory / filename
+    if p.exists():
+        return p
+    if not directory.is_dir():
+        raise FileNotFoundError(f"dossier folder missing: {directory}")
+    entries = [e for e in directory.iterdir() if e.is_file()]
+    by_lower = {e.name.lower(): e for e in entries}
+    if filename.lower() in by_lower:
+        return by_lower[filename.lower()]
+
+    def norm(name):
+        return re.sub(r"[\d_\-\s]+", "", name.lower())
+
+    cands = [e for e in entries if norm(e.name) == norm(filename)]
+    if len(cands) == 1:
+        return cands[0]
+    raise FileNotFoundError(
+        f"{filename!r} not found in {directory} "
+        f"(fuzzy candidates: {[e.name for e in cands]}; "
+        f"available: {sorted(e.name for e in entries)})")
+
+
 def parse_num(s):
     """German number '46044,67' or '-6374,83' -> float. Empty -> None."""
     if s is None or str(s).strip() == "":
@@ -52,15 +78,15 @@ def parse_num(s):
 
 def read_gdpdu_table(module, filename):
     """Read a GDPdU txt table; returns list of dicts with _prov. Columns from index.xml."""
-    idx = (BASE / module / "index.xml").read_text(encoding="utf-8", errors="replace")
+    path = _find_file(BASE / module, filename)
+    idx = _find_file(BASE / module, "index.xml").read_text(encoding="utf-8", errors="replace")
     tables = re.findall(r"<Table>(.*?)</Table>", idx, re.S)
     cols = None
     for t in tables:
         url = re.search(r"<URL>([^<]+)</URL>", t)
-        if url and url.group(1) == filename:
+        if url and url.group(1) in (filename, path.name):
             cols = re.findall(r"<Name>([^<]+)</Name>", t)[1:]  # first <Name> is table name
     rows = []
-    path = BASE / module / filename
     with open(path, encoding=ENC, newline="") as f:
         for i, rec in enumerate(csv.reader(f, delimiter=";", quotechar='"'), start=1):
             if not rec:
@@ -69,25 +95,25 @@ def read_gdpdu_table(module, filename):
                 row = dict(zip(cols, rec))
             else:
                 row = {f"C{j}": v for j, v in enumerate(rec)}
-            row["_prov"] = f"{module}/{filename}:row{i}"
+            row["_prov"] = f"{module}/{path.name}:row{i}"
             rows.append(row)
     return rows
 
 
 def read_csv_doc(filename):
     rows = []
-    path = BASE / "Begleitdokumente" / filename
+    path = _find_file(BASE / "Begleitdokumente", filename)
     with open(path, encoding=ENC, newline="") as f:
         reader = csv.DictReader(f, delimiter=";")
         for i, row in enumerate(reader, start=2):  # row 1 = header
-            row["_prov"] = f"Begleitdokumente/{filename}:row{i}"
+            row["_prov"] = f"Begleitdokumente/{path.name}:row{i}"
             rows.append(row)
     return rows
 
 
 def read_xlsx_doc(filename):
     """Return {sheet_name: [row dicts]} using first plausible header row."""
-    path = BASE / "Begleitdokumente" / filename
+    path = _find_file(BASE / "Begleitdokumente", filename)
     wb = openpyxl.load_workbook(path, data_only=True)
     sheets = {}
     for ws in wb.worksheets:
@@ -103,14 +129,14 @@ def read_xlsx_doc(filename):
         rows = []
         for i, rec in enumerate(data[h + 1:], start=h + 2):
             row = dict(zip(header, rec))
-            row["_prov"] = f"Begleitdokumente/{filename}#{ws.title}:row{i}"
+            row["_prov"] = f"Begleitdokumente/{path.name}#{ws.title}:row{i}"
             rows.append(row)
         sheets[ws.title] = rows
     return sheets
 
 
 def read_pdf_doc(filename):
-    path = BASE / "Begleitdokumente" / filename
+    path = _find_file(BASE / "Begleitdokumente", filename)
     try:
         txt = subprocess.run(["pdftotext", "-layout", str(path), "-"],
                              capture_output=True, text=True, timeout=60).stdout
@@ -118,7 +144,7 @@ def read_pdf_doc(filename):
         txt = f"[pdf extraction failed: {e}]"
     pages = txt.split("\f")
     return [{"page": i + 1, "text": p.strip(),
-             "_prov": f"Begleitdokumente/{filename}:page{i + 1}"}
+             "_prov": f"Begleitdokumente/{path.name}:page{i + 1}"}
             for i, p in enumerate(pages) if p.strip()]
 
 

@@ -18,14 +18,15 @@ import sys
 import time
 import urllib.error
 import urllib.request
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 ROOT = Path(__file__).parent
-MODEL = "gpt-4.1"
+MODEL = "gpt-4.1-mini"
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
-MAX_WORKERS = 3
 MAX_RETRIES = 5
+# The hackathon key rejects concurrent bursts with quota-style 429s while
+# sequential paced calls pass - so: one request at a time, with a gap.
+REQUEST_GAP_SECONDS = 21.0
 
 SCHEMA = {
     "type": "object",
@@ -106,38 +107,67 @@ def validate_numbers(finding: dict, texts: list[str]) -> list[str]:
     return unknown
 
 
-def openai_explain(api_key: str, finding: dict) -> dict:
-    payload = {
-        "model": MODEL,
-        "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": json.dumps(finding, ensure_ascii=False)},
-        ],
-        "response_format": {
+def build_payload(finding: dict, mode: str) -> dict:
+    """mode 'json_schema' = strict structured output; 'json_object' =
+    fallback when the account's structured-output quota flag rejects
+    strict mode (the key-list is then enforced client-side instead)."""
+    system = SYSTEM_PROMPT
+    if mode == "json_object":
+        response_format = {"type": "json_object"}
+        system += ("\n5. Respond with a JSON object containing exactly "
+                   "these string keys and no others: "
+                   + ", ".join(SCHEMA["required"]) + ".")
+    else:
+        response_format = {
             "type": "json_schema",
             "json_schema": {"name": "audit_explanation", "strict": True,
                             "schema": SCHEMA},
-        },
+        }
+    return {
+        "model": MODEL,
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": json.dumps(finding, ensure_ascii=False)},
+        ],
+        "response_format": response_format,
         "temperature": 0.2,
+        # cap output: with max_tokens unset, OpenAI reserves the model's
+        # full output limit against remaining quota -> 429 on low balances
+        "max_tokens": 900,
     }
-    data = json.dumps(payload).encode()
+
+
+def openai_explain(api_key: str, finding: dict) -> dict:
     headers = {"Authorization": f"Bearer {api_key}",
                "Content-Type": "application/json"}
+    mode = "json_schema"
     for attempt in range(MAX_RETRIES):
+        data = json.dumps(build_payload(finding, mode)).encode()
         req = urllib.request.Request(OPENAI_URL, data=data, headers=headers,
                                      method="POST")
         try:
             with urllib.request.urlopen(req, timeout=120) as r:
                 body = json.loads(r.read().decode())
-            return json.loads(body["choices"][0]["message"]["content"])
+            out = json.loads(body["choices"][0]["message"]["content"])
+            missing = [k for k in SCHEMA["required"]
+                       if not isinstance(out.get(k), str) or not out[k]]
+            if missing:
+                raise KeyError(f"model omitted keys: {missing}")
+            return out
         except urllib.error.HTTPError as e:
-            if e.code in (429, 500, 502, 503) and attempt < MAX_RETRIES - 1:
+            detail = e.read().decode(errors="replace")
+            quota = "insufficient_quota" in detail
+            if quota and mode == "json_schema":
+                mode = "json_object"  # strict-mode quota flag: retry looser
+                continue
+            if e.code in (429, 500, 502, 503) and not quota \
+                    and attempt < MAX_RETRIES - 1:
                 retry_after = e.headers.get("Retry-After")
                 delay = float(retry_after) if retry_after else 2.0 * 2 ** attempt
                 time.sleep(min(delay, 30.0))
                 continue
-            detail = e.read().decode(errors="replace")[:200]
-            raise urllib.error.URLError(f"HTTP {e.code}: {detail}") from e
+            raise urllib.error.URLError(
+                f"HTTP {e.code}: {detail[:200]}") from e
     raise urllib.error.URLError("retries exhausted")
 
 
@@ -169,13 +199,25 @@ def main() -> None:
     existing = {}
     if out_path.exists():
         existing = json.loads(out_path.read_text())
+    if not only:  # full run: skip findings that already succeeded
+        findings = [f for f in findings
+                    if "error" in existing.get(f["id"], {"error": "missing"})]
+        if not findings:
+            print("all findings already explained")
+            return
 
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
-        results = dict(pool.map(
-            lambda f: explain_finding(api_key, f), findings))
+    results = {}
+    for i, finding in enumerate(findings):
+        if i > 0:
+            time.sleep(REQUEST_GAP_SECONDS)
+        fid, result = explain_finding(api_key, finding)
+        results[fid] = result
+        status = "error" if "error" in result else "ok"
+        print(f"  [{i + 1}/{len(findings)}] {fid}: {status}", flush=True)
+        merged = {**existing, **results}
+        out_path.write_text(json.dumps(merged, indent=2, ensure_ascii=False))
 
     merged = {**existing, **results}
-    out_path.write_text(json.dumps(merged, indent=2, ensure_ascii=False))
 
     ok = sum(1 for r in results.values() if r.get("validated"))
     flagged = [(fid, r["unknown_numbers"]) for fid, r in results.items()
