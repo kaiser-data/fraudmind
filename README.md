@@ -65,18 +65,49 @@ Full write-up: [REPORT.md](REPORT.md). Machine-readable: `build/findings.json` a
 
 ## Architecture
 
+```mermaid
+flowchart LR
+    subgraph dossier["📁 Audit dossier (GDPdU)"]
+        A1["GL · subledgers · assets<br/>(txt + index.xml)"]
+        A2["Companion docs<br/>(csv · xlsx · docx · pdf)"]
+    end
+
+    subgraph engine["⚙️ Deterministic engine"]
+        B["ingest.py<br/>parse + fuzzy file resolution,<br/>link chains by document no."]
+        C["checks.py<br/>22 check families,<br/>thresholds parsed from the<br/>dossier's own planning workpaper"]
+        D[("build/findings.json<br/>two-tier: FLAGGED / NEEDS_REVIEW<br/>every number cites file:row")]
+    end
+
+    subgraph ai["🧠 Language & graph layer"]
+        E["explain.py · OpenAI<br/>DE/EN auditor language,<br/>every number validated<br/>against the engine"]
+        F["Cognee Cloud<br/>knowledge graph of users,<br/>journals, approvals, permissions<br/>→ independent candidate ranking"]
+    end
+
+    subgraph ui["🖥️ Review console (React)"]
+        G["app.py · stdlib server :8600"]
+        H["1 Dossier → 2 Analysis →<br/>3 Review (auditor verdicts) →<br/>4 Report (PDF)"]
+    end
+
+    A1 --> B
+    A2 --> B
+    B --> C
+    C --> D
+    D --> E
+    D --> F
+    D --> G
+    E --> G
+    F -- "Ask the brain (live Q&A)" --> G
+    G --> H
+
+    style dossier fill:#f5f0e8,stroke:#8a7a5c,color:#000
+    style engine fill:#e8eef7,stroke:#1f3d7a,color:#000
+    style ai fill:#f0e8f5,stroke:#6b3d7a,color:#000
+    style ui fill:#e8f5ec,stroke:#2d7a4f,color:#000
 ```
-dossier folder ──> ingest.py ──> build/*.json ──> checks.py ──> build/findings.json
-   (GDPdU txt,      parse +        linked chains     22 check       two-tier findings
-    csv, xlsx,      link by        + entities +      families       with provenance
-    docx, pdf)      invoice no.    provenance
-                                                        │
-                        Cognee Cloud knowledge graph <──┤
-                        (entity graph, live Q&A)        ▼
-                                     app.py  →  React review console (frontend/)
-                                     4 stages: Dossier upload → live Analysis →
-                                     Review (auditor decides) → Report (PDF)
-```
+
+**The contract:** the engine decides every number (deterministic, cited) · AI writes language
+only (validated) · the knowledge graph connects entities (cross-validation) · the auditor
+decides verdicts.
 
 ## Review console (the auditor workflow)
 
