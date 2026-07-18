@@ -32,10 +32,27 @@ dossier folder ──> ingest.py ──> build/*.json ──> checks.py ──> 
                                                         │
                         Cognee Cloud knowledge graph <──┤
                         (entity graph, live Q&A)        ▼
-                                            app.py + brain.html
-                                            localhost dashboard: findings register,
-                                            impact bars, "Ask the brain" (Cognee API)
+                                     app.py  →  React review console (frontend/)
+                                     4 stages: Dossier upload → live Analysis →
+                                     Review (auditor decides) → Report (PDF)
 ```
+
+## Review console (the auditor workflow)
+
+- **Fraud-type headline first**: every case opens with its scheme (e.g. "Master-data
+  self-approval (SoD override) — control override · vendor-fraud pattern") and one
+  sentence on why the pattern matters; details are progressive-disclosure folds.
+- **Decisions on the left**: Confirm fraud / Follow-up / Dismiss + reviewer note,
+  directly under the finding queue; every queue item shows confidence, amount,
+  and evidence count at a glance.
+- **Clickable evidence**: each `file:row` citation opens the actual source record
+  in-app with the cited row highlighted in context (`/api/source`).
+- **PDF report**: one click produces a formal audit report (scheme headlines,
+  methodology, evidence citations, human verdicts) — the submission artifact.
+  Plus in-app preview and Markdown export.
+
+*Transparent and traceable by design — the engine decides numbers, AI drafts
+language, auditors decide verdicts.*
 
 - **Rules decide, the LLM explains.** Amounts, matches, and violations come from deterministic
   reconciliation — no hallucinated numbers.
@@ -87,5 +104,8 @@ near-duplicate vendors.
 
 - **Cognee** — knowledge graph over the dossier documents; powers the live "Ask the brain"
   Q&A with graph answers cross-checked against deterministic findings.
-- **OpenAI** — planned: auditor-language explanation/translation layer over raw findings
+- **OpenAI** — auditor-language explanation layer (explain.py, gpt-4.1-mini):
+  DE/EN headlines, explanations, and next audit steps per finding; every numeric
+  token in the AI text is validated against the engine finding ("figures
+  verified" badge) — the LLM never introduces a number.
   (structured output; the LLM never decides a number).
