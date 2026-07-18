@@ -36,7 +36,19 @@ ROOT = Path(__file__).parent
 BUILD = ROOT / "build"
 DIST = ROOT / "frontend" / "dist"
 UPLOADS = ROOT / "uploads"
-DATASET = "muster_verpackungen_2025"
+def _dataset_name():
+    """Cognee dataset name derived from the ingested company (fallback: practice)."""
+    try:
+        company = json.loads((ROOT / "build" / "entities.json").read_text())["company"]
+        slug = re.sub(r"[^a-z0-9]+", "_", company.lower()).strip("_")
+        if slug:
+            return f"{slug}_2025"
+    except Exception:
+        pass
+    return "muster_verpackungen_2025"
+
+
+DATASET = _dataset_name()
 PORT = 8600
 PRACTICE_DOSSIER = ROOT / "dataset" / "Uebungsdaten Muster Verpackungen"
 

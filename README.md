@@ -22,6 +22,26 @@ graph. Every finding cites its exact source: `file:row`, `file#sheet:row`, or `f
 
 Full write-up: [REPORT.md](REPORT.md). Machine-readable: `build/findings.json` after a run.
 
+## Results on the FINAL dossier (Beispiel Dämmstoffe GmbH, 1.08M GL lines)
+
+The same pipeline ran unchanged on the final dossier (`python3 ingest.py <path> && python3 checks.py`) —
+all thresholds (materiality €1M, JET de-minimis €50k, lock date 15.01.2026, management user IDs,
+designated account 484080) were parsed from the dossier's own audit-planning workpaper, zero
+hardcoded identifiers. **54 findings (20 FLAGGED / 33 NEEDS_REVIEW / 1 INFO):**
+
+| Lead finding | Amount |
+|---|---|
+| Journal GL-596001 posted WITHOUT release by management user BSP-U09, 30.12.2025 22:47 ("GEBUCHT OHNE FREIGABE") | €6,000,000 |
+| Four quarter-end journals created AND approved by the same management user BSP-U02 | €4,394,040 |
+| Manual GL lines entered AFTER the 15.01.2026 lock date into the closed year | €3,593,881 |
+| Rare manual postings on retained-earnings accounts 945000/940000 | ~€55.9M vol. |
+| Unapproved bank-details change (ALPEN TECHNIK) + 11 hidden credit-limit breaches | €412,256 |
+
+Cross-validation: the findings, raw evidence rows, approval-log relations, permissions matrix and
+planning criteria were pushed to a **Cognee Cloud knowledge graph** (5 documents, dataset
+`beispiel_d_mmstoffe_gmbh_2025`); an independent graph query extracts the same top fraud
+candidates the deterministic engine flagged — engine decides numbers, graph connects entities.
+
 ## Architecture
 
 ```
