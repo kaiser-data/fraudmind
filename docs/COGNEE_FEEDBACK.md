@@ -74,15 +74,36 @@ Measured cognify times (single files, sequential, `/api/v1/remember`):
     the permanent graph" step (or a TTL on session memory) would keep the long-term
     graph curated instead of accumulating every working turn.
 
-## D. Product / dashboard
+## D. Cost transparency & spend control
 
 14. **Cognify cost preview** ("this upload ≈ N tokens ≈ €X, ~Y minutes") before
-    committing — after the fact we could infer it only from wall-clock time.
-15. **Mindmap improvements for demos**: filter by document, highlight a node's
-    neighborhood, export as PNG/SVG. The graph visual was our best demo asset; we
-    couldn't isolate the fraud cluster on stage.
-16. **Per-dataset delete/rename in the console.** Iterating on ingestion strategies
-    (curated vs. raw) creates junk datasets that currently linger.
+    committing — after the fact we could infer it only from wall-clock time. Our
+    hackathon day consumed a significant share of credits, and we could never see it
+    coming per upload.
+15. **Budget caps and alerts.** A per-dataset or per-day spend limit ("stop cognify
+    when €X is reached") plus an email/webhook alert. Right now the only way to
+    discover high spend is the billing page after the fact — with token-priced
+    ingestion of large files, a single misjudged upload burns real money (and when it
+    dies at the gateway, the tokens are spent but the data never lands: paying for a
+    failed ingest is the worst of both).
+16. **Per-pipeline-run cost attribution.** `pipeline_run_id` exists — attach
+    tokens-consumed and cost to it in the API response and dashboard, so users can
+    see which document cost what and tune their curation.
+
+## E. Dashboard / graph visualization
+
+17. **Graph view fails to render on larger datasets.** After ingesting ~20 documents
+    the mindmap for our dataset would not load at all — the one artifact we most
+    wanted to show (and the reason we accepted the ingestion cost) was unavailable
+    precisely because the dataset reached real-world size. Server-side sampling or
+    progressive loading (render top-N nodes by degree, expand on click) would fix
+    this; an empty canvas after significant spend is the single worst moment in the
+    product journey.
+18. **Mindmap improvements for demos**: filter by document, highlight a node's
+    neighborhood, export as PNG/SVG. We couldn't isolate the fraud cluster on stage.
+19. **Per-dataset delete/rename in the console.** Iterating on ingestion strategies
+    (curated vs. raw) creates junk datasets that currently linger — and keep costing
+    storage.
 
 ## What worked well (keep it)
 
