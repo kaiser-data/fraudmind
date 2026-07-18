@@ -45,16 +45,49 @@ Corroboration in review tier: two more "GEBUCHT OHNE FREIGABE" journals by BSP-U
 management-user journal volumes (K3), bill-and-hold agreement flagged for revenue-recognition
 review, receivables from insolvency-listed customers.
 
-## Knowledge-graph cross-validation (Cognee Cloud)
+## Engine vs. knowledge graph — head-to-head (measured, same dossier)
 
-The dossier's **relationship facts** — 275 notable approval-log rows (creator → journal →
-approver → status → amount), all 59 master-data changes, the permissions matrix, legal cases,
-planning criteria, plus raw evidence rows — were cognified into dataset
-`beispiel_d_mmstoffe_gmbh_2025` (5 documents). An **independent graph query** ("act as a
-forensic auditor, extract and rank fraud candidates from the relationship facts") returns the
-same top candidates the deterministic engine flagged, and adds combined-fact reasoning
-(permissions that don't match actions, parties with legal cases and open balances). Two
-independent methods converging on one fraud narrative — that is the traceability story.
+We ran both methods independently on the final dossier and re-verified every claim
+against raw source files. The graph (Cognee Cloud, 20 companion documents cognified)
+was queried **blind** — it never saw the engine's findings.
+
+| Dimension | ⚙️ Deterministic engine | 🧠 Knowledge graph (Cognee) | Winner |
+|---|---|---|---|
+| **Coverage** | Full population incl. the 1.08M-row GL | 20 companion docs; files >1MB failed (gateway timeout), GL infeasible | Engine |
+| **Speed** | ~40 s end-to-end | ~3 h cumulative cognify (280KB ≈ 38 min) | Engine |
+| **Precision & replay** | Deterministic, every figure cites file:row, reruns byte-identical | 1 internal contradiction across answers; needs re-verification | Engine |
+| **Quantification** | Amounts recomputed from source, no double counting | Framed €462M of journal *selection volume* as "exposure" — misleading | Engine |
+| **Known-pattern detection** | 54 findings across 22 coded families | Independently reproduced all 6 lead schemes (same journals, users, amounts) | Tie — that's the cross-validation |
+| **Unanticipated patterns** | Only finds what a family encodes | Found **4 verified leads the engine missed** (below) | **Graph** |
+| **Free-text evidence** | Ignores note columns | Read "Konto nicht deaktiviert" in a permissions note | **Graph** |
+| **Reviewer Q&A** | — | Powers the case chat, ~30 s grounded answers | **Graph** |
+
+**Graph-only catches (each re-verified in the raw files):**
+1. **720 Generalstorno reversals of LOCKED 31.12.2025 revenue postings** by one user
+   (BSP-U10) in a single day, 05.01.2026 — the engine's change-log check had exempted
+   stornos as the "legitimate" correction path; a 720-row batch is anything but.
+2. **~€1.74M "Umsatzbonus 2025" credit notes** posted 05.–07.01.2026 to ALPEN TECHNIK
+   (−€650,715) and HANSEPROFILE (−€543,641 / −€544,018) — revenue pulled back right after
+   year-end, at parties with credit-limit anomalies; the engine's cut-off rule tested
+   invoices, not credit notes.
+3. **Departed employee's account never deactivated** (BSP-U16, left 31.10.2025) — written
+   only in a free-text note the engine never read.
+4. **Dunning blocks (Mahnsperre) enabled for 4 debtors** by a user without master-data
+   rights, weeks before year-end.
+
+**Why each fails where it fails:** the engine is blind outside its coded rule families —
+every one of the four misses was a pattern no family anticipated. The graph fails on
+scale and rigor — token-priced ingestion collapses on ledgers, answers occasionally
+contradict themselves, and it confuses selection volume with financial impact. Neither
+failure mode overlaps the other's strength, which is the argument for the pair:
+**the graph discovers, the engine institutionalizes** (all four catches are now general
+check-family candidates — mass-storno, post-year-end credit notes, leaver accounts,
+dunning blocks).
+
+Full analysis: [docs/ENGINE_VS_GRAPH.md](docs/ENGINE_VS_GRAPH.md) ·
+combined case report: [docs/FINAL_REPORT.md](docs/FINAL_REPORT.md) ·
+cost/latency post-mortem & three-tier hybrid design:
+[docs/HYBRID_ARCHITECTURE.md](docs/HYBRID_ARCHITECTURE.md)
 
 ## Results on the practice dossier
 
@@ -201,9 +234,11 @@ rarely-used accounts + designated full-review account · insolvency receivables 
 
 ## Partner tech
 
-- **Cognee** — knowledge graph over the dossier's relationship facts; powers the live
-  "Ask the brain" Q&A and independent graph-based fraud-candidate extraction that
-  cross-validates the deterministic engine.
+- **Cognee** — knowledge graph over the dossier documents; powers the case chat and
+  independent fraud-candidate extraction. On the final dossier it reproduced all 6 lead
+  schemes blind AND contributed 4 verified catches the engine missed (720 locked-posting
+  reversals, €1.74M post-year-end credit notes, a leaver account, dunning blocks) — see
+  the head-to-head above.
 - **OpenAI** — auditor-language explanation layer (explain.py, gpt-4.1-mini): DE/EN headlines,
   explanations, and next audit steps per finding; every numeric token in the AI text is
   validated against the engine finding ("figures verified" badge) — the LLM never introduces
