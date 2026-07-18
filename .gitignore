@@ -7,6 +7,7 @@ dataset/
 dataset.json
 *.zip
 HANDOFF.md
+GT_CALIBRATION_HANDOFF.md
 QUESTIONS_TRACK_OWNER.md
 uploads/
 frontend/node_modules/
